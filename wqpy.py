@@ -123,31 +123,31 @@ def parse_string_or_list(s: Union[list, str]) -> list:
         query_list = [str(element) for element in s]
     return query_list
 
-def get_wqp_results(url: str,
-                    bBox = None,
-                    lat = None,
-                    lon = None,
-                    within = None,
-                    countrycode = None,
-                    stateletters = None,
-                    countyname = None,
-                    siteType = None,
-                    organization = None,
-                    siteid = None,
-                    huc = None,
-                    sampleMedia = None,
-                    characteristicType = None,
-                    characteristicName = None,
-                    pCode = None,
-                    activityId = None,
-                    startDateLo = None,
-                    startDateHi = None,
-                    mimeType = 'geojson',
-                    zip = None,
-                    providers = None,
-                    sorted = None,
-                    dataProfile = None,
-                    pagesize = None):
+def query_wqp(url: str,
+              bBox = None,
+              lat = None,
+              lon = None,
+              within = None,
+              countrycode = None,
+              stateletters = None,
+              countyname = None,
+              siteType = None,
+              organization = None,
+              siteid = None,
+              huc = None,
+              sampleMedia = None,
+              characteristicType = None,
+              characteristicName = None,
+              pCode = None,
+              activityId = None,
+              startDateLo = None,
+              startDateHi = None,
+              mimeType = 'csv',
+              zipped = "no",
+              providers = None,
+              sorted = None,
+              dataProfile = None,
+              pagesize = None):
  
     query_params = {}
 
@@ -217,7 +217,7 @@ def get_wqp_results(url: str,
     if providers:
         query_params['providers'] = parse_string_or_list(providers)
 
-    request_url = f'{url}mimeType={mimeType}'
+    request_url = f'{url}mimeType={mimeType}&zip={zipped}'
 
     if pagesize:
         request_url = f'{request_url}&pagesize={pagesize}'
@@ -231,13 +231,19 @@ def get_wqp_results(url: str,
     response = requests.post(url = request_url,
                              data = json.dumps(query_params),
                              headers = headers)
-    print(response.status_code)
-    return response.json()
+
+    print(response)
+    return response.content
 
 if __name__ == '__main__':
     test = get_wqp_results(url = SUMMARY_DATA_URL,
-                           statecode = 'NM',
+                           stateletters = 'NM',
+                           countyname = 'taos',
                            dataProfile = 'summaryMonitoringLocation')
     print(test)
 
 
+    '''
+    https://www.waterqualitydata.us/#statecode=US%3A35&countycode=US%3A35%3A055&siteType=Well&sampleMedia=Water&characteristicType=Physical&mimeType=geojson&dataProfile=narrowResult&providers=NWIS&providers=STEWARDS&providers=STORET
+    https://www.waterqualitydata.us/data/Result/search?statecode=US%3A35&countycode=US%3A35%3A055&siteType=Well&sampleMedia=Water&characteristicType=Physical&mimeType=geojson&dataProfile=narrowResult&providers=NWIS&providers=STEWARDS&providers=STORET
+    '''

@@ -12,16 +12,20 @@ app = FastAPI()
 
 @app.get('/')
 def show_features():
-    results = get_wqp_results(url=RESULTS_URL,
+    results = query_wqp(
+        url=RESULTS_URL,
+        sampleMedia='Water',
+        characteristicType='Physical',
+        siteType='Well',
         countyname='taos',
-        dataProfile='summaryMonitoringLocation',
-        pagesize=10)
-    print(results.keys())
+        dataProfile='narrowResult',
+        providers=['STORET', 'NWIS', 'STEWARDS'])
+    #print(results.keys())
     return results
 
 @app.get('/wells/site-data')
 def get_well_site_data():
-    results = get_wqp_results(
+    results = query_wqp(
         url=RESULTS_URL,
         sampleMedia='Water',
         characteristicType='Physical',
