@@ -71,6 +71,42 @@ state_letters_to_statecode = {
     'WY': 'US:56'
 }
 
+county_name_to_code = {
+    'bernalillo': 'US:35:001',
+    'catron': 'US:35:003',
+    'chaves': 'US:35:005',
+    'cibola': 'US:35:006',
+    'colfax': 'US:35:007',
+    'curry': 'US:35:009',
+    'debaca': 'US:35:011',
+    'dona ana': 'US:35:013',
+    'eddy': 'US:35:015',
+    'grant': 'US:35:017',
+    'guadalupe': 'US:35:019',
+    'harding': 'US:35:021',
+    'hidalgo': 'US:35:023',
+    'lea': 'US:35:025',
+    'lincoln': 'US:35:027',
+    'los alamos': 'US:35:028',
+    'luna': 'US:35:029',
+    'mckinley': 'US:35:031',
+    'mora': 'US:35:033',
+    'otero': 'US:35:035',
+    'quay': 'US:35:037',
+    'rio arriba': 'US:35:039',
+    'roosevelt': 'US:35:041',
+    'sandoval': 'US:35:043',
+    'san juan': 'US:35:045',
+    'san miguel': 'US:35:047',
+    'santa fe': 'US:35:049',
+    'sierra': 'US:35:051',
+    'socorro': 'US:35:053',
+    'taos': 'US:35:055',
+    'torrance': 'US:35:057',
+    'union': 'US:35:059',
+    'valencia': 'US:35:061'
+}
+
 def parse_string_or_list(s: Union[list, str]) -> list:
     '''
     Returns lists of query elements
@@ -93,7 +129,8 @@ def get_wqp_results(url: str,
                     lon = None,
                     within = None,
                     countrycode = None,
-                    statecode = None,
+                    stateletters = None,
+                    countyname = None,
                     siteType = None,
                     organization = None,
                     siteid = None,
@@ -109,7 +146,8 @@ def get_wqp_results(url: str,
                     zip = None,
                     providers = None,
                     sorted = None,
-                    dataProfile = None):
+                    dataProfile = None,
+                    pagesize = None):
  
     query_params = {}
 
@@ -128,13 +166,20 @@ def get_wqp_results(url: str,
     if countrycode:
         query_params['countrycode'] = parse_string_or_list(countrycode)
 
-    if statecode:
-        statecodes = parse_string_or_list(statecode)
-        statecodes = [state_letters_to_statecode[sl] for sl in statecodes]
+    if stateletters:
+        stateletters = parse_string_or_list(stateletters)
+        stateletters = [letters.upper() for letters in stateletters]
+        statecodes = [state_letters_to_statecode[sl] for sl in stateletters]
         query_params["statecode"] = statecodes
 
+    if countyname:
+        countynames = parse_string_or_list(countyname)
+        countynames = [name.lower() for name in countynames]
+        countynames = [county_name_to_code[name] for name in countynames]
+        query_params['countycode'] = countynames
+
     if siteType:
-        query_params['siteType'] = siteType
+        query_params['siteType'] = parse_string_or_list(siteType)
 
     if organization:
         query_params['organization'] = organization
@@ -146,10 +191,10 @@ def get_wqp_results(url: str,
         query_params['huc'] = huc
 
     if sampleMedia:
-        query_params['sampleMedia'] = sampleMedia
+        query_params['sampleMedia'] = parse_string_or_list(sampleMedia)
 
     if characteristicType:
-        query_params['characteristicType'] = characteristicType
+        query_params['characteristicType'] = parse_string_or_list(characteristicType)
 
     if characteristicName:
         query_params['characteristicName'] = characteristicName
@@ -166,8 +211,19 @@ def get_wqp_results(url: str,
     if startDateHi:
         query_params['startDateHi'] = startDateHi
 
-    headers = {'Content-Type': 'application/json'}
+    if dataProfile:
+        query_params['dataProfile'] = dataProfile
+
+    if providers:
+        query_params['providers'] = parse_string_or_list(providers)
+
     request_url = f'{url}mimeType={mimeType}'
+
+    if pagesize:
+        request_url = f'{request_url}&pagesize={pagesize}'
+
+    headers = {'Content-Type': 'application/json'}
+    
 
     print(request_url)
     print(json.dumps(query_params))
@@ -183,3 +239,5 @@ if __name__ == '__main__':
                            statecode = 'NM',
                            dataProfile = 'summaryMonitoringLocation')
     print(test)
+
+
