@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Union
 import requests
 import json
-from lookup_tables import state_letters_to_state_code, nm_county_name_to_county_code
+from tools.lookup_tables import state_letters_to_state_code, nm_county_name_to_county_code
 
 SITE_URL = 'https://www.waterqualitydata.us/data/Station/search?'
 RESULTS_URL = 'https://www.waterqualitydata.us/data/Result/search?'
@@ -87,7 +87,7 @@ def query_wqp(url: str,
     if countyname:
         countynames = create_query_list(countyname)
         countynames = [name.lower() for name in countynames]
-        countynames = [nm_county_name_to_code[name] for name in countynames]
+        countynames = [nm_county_name_to_county_code[name] for name in countynames]
         query_params['countycode'] = countynames
 
     if siteType:
@@ -148,7 +148,12 @@ def query_wqp(url: str,
     return response.content
 
 if __name__ == '__main__':
-    test = get_wqp_results(url = SUMMARY_DATA_URL,
-                           stateletters = 'NM',
-                           countyname = 'taos',
-                           dataProfile = 'summaryMonitoringLocation')
+    test = query_wqp(
+        url=RESULTS_URL,
+        sampleMedia='Water',
+        characteristicType='Physical',
+        siteType='Well',
+        countyname='taos',
+        dataProfile='narrowResult',
+        providers=['STORET', 'NWIS', 'STEWARDS'])
+    print(test)
