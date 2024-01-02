@@ -107,7 +107,7 @@ county_name_to_code = {
     'valencia': 'US:35:061'
 }
 
-def parse_string_or_list(s: Union[list, str]) -> list:
+def create_query_list(s: Union[list, str]) -> list:
     '''
     Returns lists of query elements
 
@@ -155,31 +155,31 @@ def query_wqp(url: str,
         query_params['bBox'] = bBox
 
     if lat:
-        query_params['lat'] = parse_string_or_list(lat)
+        query_params['lat'] = create_query_list(lat)
 
     if lon:
-        query_params['long'] = parse_string_or_list(lon)
+        query_params['long'] = create_query_list(lon)
 
     if within:
-        query_params['within'] = parse_string_or_list(within)
+        query_params['within'] = create_query_list(within)
 
     if countrycode:
-        query_params['countrycode'] = parse_string_or_list(countrycode)
+        query_params['countrycode'] = create_query_list(countrycode)
 
     if stateletters:
-        stateletters = parse_string_or_list(stateletters)
+        stateletters = create_query_list(stateletters)
         stateletters = [letters.upper() for letters in stateletters]
         statecodes = [state_letters_to_statecode[sl] for sl in stateletters]
         query_params["statecode"] = statecodes
 
     if countyname:
-        countynames = parse_string_or_list(countyname)
+        countynames = create_query_list(countyname)
         countynames = [name.lower() for name in countynames]
         countynames = [county_name_to_code[name] for name in countynames]
         query_params['countycode'] = countynames
 
     if siteType:
-        query_params['siteType'] = parse_string_or_list(siteType)
+        query_params['siteType'] = create_query_list(siteType)
 
     if organization:
         query_params['organization'] = organization
@@ -191,10 +191,10 @@ def query_wqp(url: str,
         query_params['huc'] = huc
 
     if sampleMedia:
-        query_params['sampleMedia'] = parse_string_or_list(sampleMedia)
+        query_params['sampleMedia'] = create_query_list(sampleMedia)
 
     if characteristicType:
-        query_params['characteristicType'] = parse_string_or_list(characteristicType)
+        query_params['characteristicType'] = create_query_list(characteristicType)
 
     if characteristicName:
         query_params['characteristicName'] = characteristicName
@@ -215,7 +215,7 @@ def query_wqp(url: str,
         query_params['dataProfile'] = dataProfile
 
     if providers:
-        query_params['providers'] = parse_string_or_list(providers)
+        query_params['providers'] = create_query_list(providers)
 
     request_url = f'{url}mimeType={mimeType}&zip={zipped}'
 
@@ -240,10 +240,3 @@ if __name__ == '__main__':
                            stateletters = 'NM',
                            countyname = 'taos',
                            dataProfile = 'summaryMonitoringLocation')
-    print(test)
-
-
-    '''
-    https://www.waterqualitydata.us/#statecode=US%3A35&countycode=US%3A35%3A055&siteType=Well&sampleMedia=Water&characteristicType=Physical&mimeType=geojson&dataProfile=narrowResult&providers=NWIS&providers=STEWARDS&providers=STORET
-    https://www.waterqualitydata.us/data/Result/search?statecode=US%3A35&countycode=US%3A35%3A055&siteType=Well&sampleMedia=Water&characteristicType=Physical&mimeType=geojson&dataProfile=narrowResult&providers=NWIS&providers=STEWARDS&providers=STORET
-    '''
