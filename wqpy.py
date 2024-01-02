@@ -3,6 +3,7 @@ from typing import Union
 import requests
 import json
 from tools.lookup_tables import state_letters_to_state_code, nm_county_name_to_county_code
+from tools.query_builder_tools import create_query_list
 
 SITE_URL = 'https://www.waterqualitydata.us/data/Station/search?'
 RESULTS_URL = 'https://www.waterqualitydata.us/data/Result/search?'
@@ -19,21 +20,7 @@ SUMMARY_DATA_URL = 'https://www.waterqualitydata.us/data/summary/monitoringLocat
 # ------------------
 
 
-def create_query_list(s: Union[list, str]) -> list:
-    '''
-    Returns lists of query elements
 
-    Parameters:
-    s (list or str): string or list of strings
-
-    Returns:
-    list: list of query elements 
-    '''
-    if type(s) is str:
-        query_list = [s]
-    else:
-        query_list = [str(element) for element in s]
-    return query_list
 
 def query_wqp(url: str,
               bBox = None,
