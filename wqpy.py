@@ -20,7 +20,7 @@ SUMMARY_DATA_URL = 'https://www.waterqualitydata.us/data/summary/monitoringLocat
 # END TYPE HINTING
 # ------------------
 
-def query_wqp(url: str,
+def query_wqp(url_type: str,
               bBox = None,
               lat = None,
               lon = None,
@@ -39,13 +39,18 @@ def query_wqp(url: str,
               activityId = None,
               startDateLo = None,
               startDateHi = None,
-              mimeType = 'tsv',
-              zipped = "no",
               providers = None,
               sorted = None,
               dataProfile = None,
               pagesize = None):
- 
+
+    if url_type != 'site data' and url_type != 'results':
+        raise Exception("url_type must be either 'site data' or 'results'")
+
+        
+    else:
+        url = RESULTS_URL
+
     query_params = {}
 
     if bBox:
@@ -82,7 +87,7 @@ def query_wqp(url: str,
         query_params['organization'] = organization
 
     if siteid:
-        query_params['siteid'] = siteid
+        query_params['siteid'] = create_query_list(siteid)
 
     if huc:
         query_params['huc'] = huc
@@ -94,7 +99,7 @@ def query_wqp(url: str,
         query_params['characteristicType'] = create_query_list(characteristicType)
 
     if characteristicName:
-        query_params['characteristicName'] = characteristicName
+        query_params['characteristicName'] = create_query_list(characteristicName)
 
     if pCode:
         query_params['pCode'] = pCode
@@ -114,7 +119,12 @@ def query_wqp(url: str,
     if providers:
         query_params['providers'] = create_query_list(providers)
 
-    request_url = f'{url}mimeType={mimeType}&zip={zipped}'
+    if url_type == 'site data':
+        url = SITE_URL
+        request_url = f'{url}mimeType=geojson'
+    else:
+        url = RESULTS_URL
+        request_url = f'{url}mimeType=tsv'
 
     if pagesize:
         request_url = f'{request_url}&pagesize={pagesize}'
@@ -122,24 +132,29 @@ def query_wqp(url: str,
     headers = {'Content-Type': 'application/json'}
     
 
-    print(request_url)
-    print(json.dumps(query_params))
+    #print(request_url)
+    #print(json.dumps(query_params))
 
     response = requests.post(url = request_url,
                              data = json.dumps(query_params),
                              headers = headers)
+    response = response.content.decode()
 
-    response_str = response.content.decode()
-    response_list = parse_wqp_results_to_list(response_str)
-    return response_list
+    if url_type == 'site data':
+        return response
+    else:
+        response_list = parse_wqp_results_to_list(response)
+        return response_list
 
 if __name__ == '__main__':
     from pandas import DataFrame
 
+    '''
     test = query_wqp(
         url=RESULTS_URL,
         sampleMedia='Water',
         characteristicType='Physical',
+        characteristicName='Total dissolved solids',
         siteType='Well',
         countyname='taos',
         dataProfile='narrowResult',
@@ -152,3 +167,34 @@ if __name__ == '__main__':
 
     test_df = DataFrame(values, columns = column_names)
     test_df.to_csv(path_or_buf='./test/test.csv')
+    
+
+    test = query_wqp(
+        url=RESULTS_URL,
+        sampleMedia='Water',
+        characteristicType='Physical',
+        characteristicName='Total dissolved solids',
+        siteType='Well',
+        siteid='USGS-365444105484701',
+        dataProfile='narrowResult',
+        providers=['STORET', 'NWIS', 'STEWARDS'],
+        mimeType='tsv') 
+
+    column_names = test[0]
+    values = test[1:]
+
+    test_df = DataFrame(values, columns = column_names)
+    test_df.to_csv(path_or_buf='./test/test2.csv')
+    '''
+
+    test = query_wqp(
+        url_type='results',
+        sampleMedia='Water',
+        characteristicType='Physical',
+        characteristicName='Total dissolved solids',
+        siteType='Well',
+        siteid='USGS-365444105484701',
+        dataProfile='narrowResult',
+        providers=['STORET', 'NWIS', 'STEWARDS'])
+
+    print(test)
