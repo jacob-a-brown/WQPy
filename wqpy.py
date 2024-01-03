@@ -4,6 +4,7 @@ import requests
 import json
 from tools.lookup_tables import state_letters_to_state_code, nm_county_name_to_county_code
 from tools.query_builder_tools import create_query_list
+from tools.wqp_results_tools import parse_wqp_results_to_list
 
 SITE_URL = 'https://www.waterqualitydata.us/data/Station/search?'
 RESULTS_URL = 'https://www.waterqualitydata.us/data/Result/search?'
@@ -18,9 +19,6 @@ SUMMARY_DATA_URL = 'https://www.waterqualitydata.us/data/summary/monitoringLocat
 # ------------------
 # END TYPE HINTING
 # ------------------
-
-
-
 
 def query_wqp(url: str,
               bBox = None,
@@ -41,7 +39,7 @@ def query_wqp(url: str,
               activityId = None,
               startDateLo = None,
               startDateHi = None,
-              mimeType = 'csv',
+              mimeType = 'tsv',
               zipped = "no",
               providers = None,
               sorted = None,
@@ -131,10 +129,13 @@ def query_wqp(url: str,
                              data = json.dumps(query_params),
                              headers = headers)
 
-    print(response)
-    return response.content
+    response_str = response.content.decode()
+    response_list = parse_wqp_results_to_list(response_str)
+    return response_list
 
 if __name__ == '__main__':
+    from pandas import DataFrame
+
     test = query_wqp(
         url=RESULTS_URL,
         sampleMedia='Water',
@@ -142,5 +143,12 @@ if __name__ == '__main__':
         siteType='Well',
         countyname='taos',
         dataProfile='narrowResult',
-        providers=['STORET', 'NWIS', 'STEWARDS'])
-    print(test)
+        providers=['STORET', 'NWIS', 'STEWARDS'],
+        mimeType='tsv')
+    
+    
+    column_names = test[0]
+    values = test[1:]
+
+    test_df = DataFrame(values, columns = column_names)
+    test_df.to_csv(path_or_buf='./test/test.csv')
