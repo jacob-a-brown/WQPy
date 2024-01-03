@@ -47,10 +47,6 @@ def query_wqp(url_type: str,
     if url_type != 'site data' and url_type != 'results':
         raise Exception("url_type must be either 'site data' or 'results'")
 
-        
-    else:
-        url = RESULTS_URL
-
     query_params = {}
 
     if bBox:
