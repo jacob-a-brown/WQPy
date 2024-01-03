@@ -184,7 +184,7 @@ if __name__ == '__main__':
     '''
 
     test = query_wqp(
-        url_type='results',
+        url_type='site data',
         sampleMedia='Water',
         characteristicType='Physical',
         characteristicName='Total dissolved solids',
